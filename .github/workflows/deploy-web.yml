@@ -22,8 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify export templates
-        run: ls /root/.local/share/godot/export_templates/
+      - name: Setup export templates
+        run: |
+          mkdir -p /github/home/.local/share/godot/export_templates/
+          cp -r /root/.local/share/godot/export_templates/* /github/home/.local/share/godot/export_templates/
+          ls /github/home/.local/share/godot/export_templates/
 
       - name: Import project
         run: godot --headless --import 2>&1 || true
