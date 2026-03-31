@@ -38,6 +38,11 @@ func setup(pos: Vector2, size: FoodSize, shape: FoodShape) -> void:
 	color = FOOD_COLORS[randi() % FOOD_COLORS.size()]
 	_rotation_speed = randf_range(0.5, 1.5) * (1.0 if randf() > 0.5 else -1.0)
 	_points = _generate_shape_points()
+	# Use actual bounding radius from generated points for size gating.
+	var max_dist: float = 0.0
+	for p: Vector2 in _points:
+		max_dist = maxf(max_dist, p.length())
+	radius = max_dist
 
 
 func _process(delta: float) -> void:
