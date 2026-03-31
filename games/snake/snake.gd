@@ -19,7 +19,14 @@ const TIERS: Array = [
 	[50, 8, 30.0, Color(0.7, 0.3, 1.0)],
 ]
 
-var direction: Vector2 = Vector2.UP
+var _direction: Vector2 = Vector2.UP
+var direction: Vector2:
+	get:
+		return _direction
+	set(value):
+		if _direction.dot(value.normalized()) < -0.5:
+			return
+		_direction = value.normalized()
 var segments_eaten: int = 0
 
 var _segments: Array[Dictionary] = []
@@ -37,6 +44,7 @@ func _process(delta: float) -> void:
 	if _path.is_empty() or position.distance_to(_path[_path.size() - 1]) >= PATH_RESOLUTION:
 		_path.append(position)
 
+	_trim_path()
 	queue_redraw()
 
 
@@ -165,6 +173,26 @@ func _get_tier_index(eaten: int) -> int:
 		if eaten >= TIERS[i][0]:
 			idx = i
 	return idx
+
+
+func _trim_path() -> void:
+	if _segments.size() < 2 or _path.size() < 10:
+		return
+	var total_needed: float = 0.0
+	for i: int in range(_segments.size()):
+		total_needed += _segments[i]["radius"] * SEGMENT_SPACING
+	total_needed *= 1.5
+
+	var total: float = 0.0
+	var keep_from: int = 0
+	for i: int in range(_path.size() - 1, 0, -1):
+		total += _path[i].distance_to(_path[i - 1])
+		if total >= total_needed:
+			keep_from = i - 1
+			break
+
+	if keep_from > 0:
+		_path = _path.slice(keep_from)
 
 
 func _get_polygon_points(sides: int, radius: float) -> PackedVector2Array:
