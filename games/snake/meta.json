@@ -1,0 +1,10 @@
+{
+  "id": "snake",
+  "name": "Geo Snake",
+  "description": "Eat, grow, evolve — don't eat yourself",
+  "icon": "",
+  "coin_rate": 1.5,
+  "unlock_cost": 0,
+  "tags": ["arcade", "2d"],
+  "min_version": "0.1.0"
+}
