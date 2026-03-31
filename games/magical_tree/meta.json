@@ -1,0 +1,10 @@
+{
+  "id": "magical_tree",
+  "name": "Magical Tree",
+  "description": "Grow a magical tree to the sky! Choose your seed and reach for the stars.",
+  "icon": "",
+  "coin_rate": 1.2,
+  "unlock_cost": 0,
+  "tags": ["arcade", "2d", "endless"],
+  "min_version": "0.1.0"
+}
