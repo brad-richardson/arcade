@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://games/magical_tree/game.gd" id="1"]
+[ext_resource type="Script" path="res://games/sky_tree/game.gd" id="1"]
 [ext_resource type="PackedScene" path="res://shared/ui/pause_menu.tscn" id="2"]
 
 [node name="Game" type="Node2D"]

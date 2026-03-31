@@ -1,5 +1,5 @@
 extends Node2D
-class_name MagicalTree
+class_name SkyTree
 ## Handles tree growth, rendering, and collision detection.
 ## The tree is a series of connected points that grow upward.
 

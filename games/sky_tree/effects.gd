@@ -1,12 +1,12 @@
 extends Node2D
 class_name TreeEffects
-## Particle effects for the magical tree game: growth sparkles, leaves, death burst.
+## Particle effects for the SkyTree game: growth sparkles, leaves, death burst.
 
 var _particles: Array[Dictionary] = []
 
 const TRAIL_EMIT_INTERVAL: float = 0.04
 var _trail_timer: float = 0.0
-var _trail_source: MagicalTree = null
+var _trail_source: SkyTree = null
 var _trail_color: Color = Color.GREEN
 
 
@@ -43,7 +43,7 @@ func _draw() -> void:
 		draw_circle(p["pos"], r, c)
 
 
-func set_trail_source(source: MagicalTree) -> void:
+func set_trail_source(source: SkyTree) -> void:
 	_trail_source = source
 	_trail_color = source.glow_color
 

@@ -1,6 +1,6 @@
 extends Node2D
 class_name TreeObstacles
-## Manages obstacle spawning, storage, and rendering for the magical tree game.
+## Manages obstacle spawning, storage, and rendering for the SkyTree game.
 ## Obstacle types: 0=none, 1=stone(lethal), 2=cloud(slow), 3=wind(push), 4=sunbeam(bonus)
 
 const TYPE_STONE: int = 1
@@ -70,7 +70,7 @@ func _spawn_obstacle(height: float) -> void:
 		obs_type = TYPE_WIND
 		obs_size = Vector2(120.0, 200.0)
 
-	var x: float = randf_range(-MagicalTree.BOUNDS_X + SPAWN_MARGIN, MagicalTree.BOUNDS_X - SPAWN_MARGIN)
+	var x: float = randf_range(-SkyTree.BOUNDS_X + SPAWN_MARGIN, SkyTree.BOUNDS_X - SPAWN_MARGIN)
 	var y: float = _spawn_ahead_y
 
 	var wind_dir: float = 0.0
@@ -86,7 +86,7 @@ func _spawn_obstacle(height: float) -> void:
 
 
 func _spawn_sunbeam() -> void:
-	var x: float = randf_range(-MagicalTree.BOUNDS_X + 80.0, MagicalTree.BOUNDS_X - 80.0)
+	var x: float = randf_range(-SkyTree.BOUNDS_X + 80.0, SkyTree.BOUNDS_X - 80.0)
 	var y: float = _spawn_ahead_y
 	obstacles.append({
 		"pos": Vector2(x, y),

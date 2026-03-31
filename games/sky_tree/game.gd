@@ -1,5 +1,5 @@
 extends BaseGame
-## Magical Tree — Grow a magical tree skyward, steering around obstacles.
+## SkyTree — Grow a magical tree skyward, steering around obstacles.
 ## Inspired by Prune × Dolphin Olympics.
 
 enum State { SEED_SELECT, GROWING, GAME_OVER }
@@ -74,7 +74,7 @@ const BG_ZONES: Array[Dictionary] = [
 
 var state: int = State.SEED_SELECT
 var selected_seed: int = -1
-var tree: MagicalTree
+var tree: SkyTree
 var obstacles: TreeObstacles
 var effects: TreeEffects
 var height_score: float = 0.0
@@ -347,7 +347,7 @@ func _start_game() -> void:
 	has_burned = false
 
 	# Create tree.
-	tree = MagicalTree.new()
+	tree = SkyTree.new()
 	tree.position = Vector2(0.0, START_Y)
 	add_child(tree)
 	tree.setup(seed_config)
