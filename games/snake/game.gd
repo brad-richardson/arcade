@@ -15,6 +15,7 @@ var segments_eaten: int = 0
 var total_food: int = 0
 var snake: Snake
 var _food_container: Node2D
+var _effects: SnakeEffects
 
 @onready var camera: Camera2D = $Camera2D
 @onready var pause_menu: CanvasLayer = $PauseMenu
@@ -27,6 +28,10 @@ func _ready() -> void:
 	add_child(_food_container)
 	_spawn_food()
 	_spawn_snake()
+	_effects = SnakeEffects.new()
+	add_child(_effects)
+	_effects.set_trail_source(snake, snake.get_tier_color())
+	snake.tier_changed.connect(_on_tier_changed)
 	var joystick: FloatingJoystick = $UI/Joystick
 	joystick.direction_changed.connect(_on_direction_changed)
 
@@ -119,6 +124,7 @@ func _check_food_collision() -> void:
 		var dist: float = head_pos.distance_to(f.position)
 		if dist < head_r + f.radius * 0.5:
 			snake.grow(f.worth)
+			_effects.emit_eat_burst(f.position, f.color)
 			segments_eaten = snake.segments_eaten
 			f.queue_free()
 			total_food -= 1
@@ -134,8 +140,20 @@ func _spawn_snake() -> void:
 	add_child(snake)
 
 
+func _on_tier_changed(_new_tier: int) -> void:
+	_effects.emit_tier_burst(snake.position, snake.get_tier_color())
+	_effects.update_trail_color(snake.get_tier_color())
+	var tween: Tween = create_tween()
+	tween.tween_property(camera, "offset", Vector2(3, 3), 0.05)
+	tween.tween_property(camera, "offset", Vector2(-3, -3), 0.05)
+	tween.tween_property(camera, "offset", Vector2.ZERO, 0.1)
+
+
 func _end_game(cleared: bool) -> void:
 	game_over = true
+	if not cleared:
+		_effects.emit_death_shatter(snake.get_segment_positions(), snake._segments)
+		snake.visible = false
 	var multiplier: int = 2 if cleared else 1
 	var coins_earned: int = int(snake.segments_eaten * coin_rate * multiplier)
 	if coins_earned > 0:
