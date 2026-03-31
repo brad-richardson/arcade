@@ -24,6 +24,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_touch_index = touch.index
 			_origin = touch.position
 			_knob_pos = touch.position
+			queue_redraw()
 		elif not touch.pressed and touch.index == _touch_index:
 			_active = false
 			_touch_index = -1
@@ -50,7 +51,7 @@ func _process(_delta: float) -> void:
 		key_dir.y -= 1.0
 	if Input.is_action_pressed("ui_down"):
 		key_dir.y += 1.0
-	if key_dir != Vector2.ZERO:
+	if not _active and key_dir != Vector2.ZERO:
 		direction_changed.emit(key_dir.normalized())
 
 

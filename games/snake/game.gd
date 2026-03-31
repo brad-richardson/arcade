@@ -14,7 +14,6 @@ const GRID_COLOR: Color = Color(0.2, 0.2, 0.28)
 const GRID_SPACING: float = 80.0
 
 var game_over: bool = false
-var segments_eaten: int = 0
 var total_food: int = 0
 var snake: Snake
 var _food_container: Node2D
@@ -162,7 +161,6 @@ func _check_food_collision() -> void:
 				return
 			snake.grow(f.worth)
 			_effects.emit_eat_burst(f.position, f.color)
-			segments_eaten = snake.segments_eaten
 			f.queue_free()
 			total_food -= 1
 
@@ -198,6 +196,7 @@ func _on_tier_changed(_new_tier: int) -> void:
 
 func _end_game(cleared: bool) -> void:
 	game_over = true
+	snake.set_process(false)
 	if not cleared:
 		_effects.emit_death_shatter(snake.get_segment_positions(), snake.get_segments())
 		snake.visible = false
