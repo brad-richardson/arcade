@@ -9,7 +9,7 @@ const MAX_PLACEMENT_ATTEMPTS: int = 20
 const BORDER_COLOR: Color = Color(0.4, 0.4, 0.5)
 const BORDER_WIDTH: float = 4.0
 const BG_COLOR: Color = Color(0.08, 0.08, 0.12)
-const GRID_COLOR: Color = Color(0.12, 0.12, 0.18)
+const GRID_COLOR: Color = Color(0.2, 0.2, 0.28)
 const GRID_SPACING: float = 80.0
 
 var game_over: bool = false
