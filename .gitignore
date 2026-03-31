@@ -1,7 +1,10 @@
 # Godot
 .godot/
 *.translation
-export_presets.cfg
+
+# Export builds (but keep presets and configs)
+export/web/
+export/ios/
 
 # OS
 .DS_Store
