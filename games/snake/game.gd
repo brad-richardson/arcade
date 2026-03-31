@@ -3,6 +3,7 @@ extends BaseGame
 
 const MAP_SIZE: Vector2 = Vector2(3600, 6400)
 const FOOD_COUNT: int = 120
+const FOOD_MARGIN: float = 100.0
 const BORDER_COLOR: Color = Color(0.4, 0.4, 0.5)
 const BORDER_WIDTH: float = 4.0
 const BG_COLOR: Color = Color(0.08, 0.08, 0.12)
@@ -13,6 +14,7 @@ var game_over: bool = false
 var segments_eaten: int = 0
 var total_food: int = 0
 var snake: Snake
+var _food_container: Node2D
 
 @onready var camera: Camera2D = $Camera2D
 @onready var pause_menu: CanvasLayer = $PauseMenu
@@ -21,6 +23,9 @@ var snake: Snake
 
 func _ready() -> void:
 	super._ready()
+	_food_container = Node2D.new()
+	add_child(_food_container)
+	_spawn_food()
 	_spawn_snake()
 	var joystick: FloatingJoystick = $UI/Joystick
 	joystick.direction_changed.connect(_on_direction_changed)
@@ -34,6 +39,8 @@ func _process(delta: float) -> void:
 	camera.position = snake.position
 
 	score_label.text = "Score: %d" % snake.segments_eaten
+
+	_check_food_collision()
 
 	if snake.check_self_collision():
 		_end_game(false)
@@ -53,6 +60,72 @@ func _draw() -> void:
 		x += GRID_SPACING
 
 	draw_rect(Rect2(Vector2.ZERO, MAP_SIZE), BORDER_COLOR, false, BORDER_WIDTH)
+
+
+func _spawn_food() -> void:
+	var small_shapes: Array = [
+		FoodItem.FoodShape.RECTANGLE,
+		FoodItem.FoodShape.PARALLELOGRAM,
+		FoodItem.FoodShape.STAR_4,
+	]
+	var medium_shapes: Array = [
+		FoodItem.FoodShape.STAR_5,
+		FoodItem.FoodShape.CROSS,
+	]
+	var large_shapes: Array = [
+		FoodItem.FoodShape.STAR_6,
+	]
+
+	for i: int in range(FOOD_COUNT):
+		var food: FoodItem = FoodItem.new()
+		var pos: Vector2 = Vector2(
+			randf_range(FOOD_MARGIN, MAP_SIZE.x - FOOD_MARGIN),
+			randf_range(FOOD_MARGIN, MAP_SIZE.y - FOOD_MARGIN),
+		)
+
+		var size: FoodItem.FoodSize
+		var shape: FoodItem.FoodShape
+		var roll: float = randf()
+		if roll < 0.55:
+			size = FoodItem.FoodSize.SMALL
+			shape = small_shapes[randi() % small_shapes.size()]
+		elif roll < 0.85:
+			size = FoodItem.FoodSize.MEDIUM
+			shape = medium_shapes[randi() % medium_shapes.size()]
+		else:
+			size = FoodItem.FoodSize.LARGE
+			shape = large_shapes[randi() % large_shapes.size()]
+
+		food.setup(pos, size, shape)
+		_food_container.add_child(food)
+
+	total_food = FOOD_COUNT
+
+
+func _check_food_collision() -> void:
+	var head_pos: Vector2 = snake.position
+	var head_r: float = snake.get_head_radius()
+	var max_eatable: float = snake.get_max_eatable_size()
+
+	for food: Node in _food_container.get_children():
+		if not food is FoodItem:
+			continue
+		var f: FoodItem = food as FoodItem
+		f.update_locked_state(max_eatable)
+
+		if f.locked:
+			continue
+
+		var dist: float = head_pos.distance_to(f.position)
+		if dist < head_r + f.radius * 0.5:
+			snake.grow(f.worth)
+			segments_eaten = snake.segments_eaten
+			f.queue_free()
+			total_food -= 1
+
+			if total_food <= 0:
+				_end_game(true)
+			return
 
 
 func _spawn_snake() -> void:
