@@ -1,0 +1,10 @@
+{
+  "id": "dodge",
+  "name": "Dodge!",
+  "description": "Avoid the falling blocks",
+  "icon": "res://games/dodge/assets/icon.png",
+  "coin_rate": 1.0,
+  "unlock_cost": 0,
+  "tags": ["arcade", "2d"],
+  "min_version": "0.1.0"
+}

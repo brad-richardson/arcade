@@ -1,0 +1,16 @@
+name: Deploy iOS
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export iOS
+        run: |
+          echo "TODO: Configure iOS export preset"
+          echo "godot --headless --export-release 'iOS' export/ios/arcade.ipa"
+      # TODO: Add xcodebuild, signing, and TestFlight upload steps

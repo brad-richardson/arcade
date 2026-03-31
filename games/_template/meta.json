@@ -1,0 +1,10 @@
+{
+  "id": "template",
+  "name": "Game Template",
+  "description": "Copy this to start a new game",
+  "icon": "",
+  "coin_rate": 1.0,
+  "unlock_cost": 0,
+  "tags": [],
+  "min_version": "0.1.0"
+}
