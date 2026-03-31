@@ -40,9 +40,25 @@ Each segment keeps the shape/tier it was when the food was eaten. The head is al
 ## Food / Collectibles
 
 - ~120 food items scattered across the map at game start.
-- Each food item is a small glowing dot/circle.
-- Eating one adds a segment to the tail at the current tier.
 - Food does not respawn — finite supply, map can be cleared.
+- Eating one adds a segment to the tail at the current tier.
+
+### Food Shapes & Sizes
+
+Food items are non-uniform, concave/irregular shapes to contrast with the snake's clean polygons:
+- **Small:** rectangles, parallelograms, small stars (~10-15px). Available from the start.
+- **Medium:** larger stars, crosses, irregular quadrilaterals (~20-30px). Appear mixed in with small.
+- **Large:** big stars, elongated shapes (~35-45px). Scattered sparingly.
+
+Each food item has a size value. The snake can eat food whose size is at or below its current tier radius + a grace margin (~30% larger than the snake's segment radius). This means:
+- Triangle tier (15px radius): can eat food up to ~20px
+- Square tier (18px radius): can eat food up to ~23px
+- Pentagon tier (21px radius): can eat food up to ~27px
+- ...and so on
+
+Food that's too large to eat is drawn with a subtle lock/dim effect. As you tier up, previously locked food "unlocks" visually (brightens, maybe a subtle pulse). This creates the hole.io "oh NOW I can eat that" moment.
+
+Larger food is worth more segments (small = 1, medium = 2, large = 3), so eating bigger things accelerates growth.
 
 ## Collision & End Conditions
 
@@ -83,11 +99,15 @@ The snake manages its own segment array and draws them via `_draw()`. Food items
 |-------|--------|
 | Touch + drag anywhere | Steer snake toward drag direction |
 | Release touch | Snake continues in last direction |
+| Arrow keys | Steer snake (desktop/browser fallback) |
 | Pause button (top-right) | Opens pause menu |
+
+## Hub Preview
+
+A lightweight `preview.tscn` / `preview.gd` scene that shows a scripted demo of the snake game. Uses the same drawing/visual code as the real game but with a pre-scripted movement path and food spawning — no input handling. The hub card embeds this via SubViewport. This follows the pattern established for all games (see brad-richardson/arcade#1).
 
 ## Out of Scope (v1)
 
-- Size-gated food (eat bigger things as you grow) — possible v2 feature.
 - Multiplayer / AI snakes.
 - Power-ups or special abilities.
 - Sound effects / music (can add later).
