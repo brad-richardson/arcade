@@ -6,6 +6,7 @@ const FOOD_COUNT: int = 120
 const FOOD_MARGIN: float = 100.0
 const FOOD_BUFFER: float = 8.0
 const MAX_PLACEMENT_ATTEMPTS: int = 20
+const SPAWN_SAFE_RADIUS: float = 300.0
 const BORDER_COLOR: Color = Color(0.4, 0.4, 0.5)
 const BORDER_WIDTH: float = 4.0
 const BG_COLOR: Color = Color(0.08, 0.08, 0.12)
@@ -113,6 +114,10 @@ func _spawn_food() -> void:
 				randf_range(FOOD_MARGIN, MAP_SIZE.x - FOOD_MARGIN),
 				randf_range(FOOD_MARGIN, MAP_SIZE.y - FOOD_MARGIN),
 			)
+			# Large/medium food can't spawn near the player start.
+			if size != FoodItem.FoodSize.SMALL:
+				if pos.distance_to(MAP_SIZE / 2.0) < SPAWN_SAFE_RADIUS:
+					continue
 			if _is_food_position_clear(pos, food.radius):
 				food.position = pos
 				placed = true
