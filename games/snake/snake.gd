@@ -93,7 +93,7 @@ func grow(count: int = 1) -> void:
 		segments_eaten += 1
 		var old_tier: int = _get_tier_index(segments_eaten - 1)
 		var new_tier: int = _get_tier_index(segments_eaten)
-		_segments.append(_make_segment_data())
+		_segments.insert(1, _make_segment_data())
 		if new_tier != old_tier:
 			_segments[0] = _make_segment_data()
 			tier_changed.emit(new_tier)
