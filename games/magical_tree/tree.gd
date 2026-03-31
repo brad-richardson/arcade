@@ -12,6 +12,7 @@ const BRANCH_INTERVAL: float = 80.0
 const BRANCH_LENGTH_MIN: float = 20.0
 const BRANCH_LENGTH_MAX: float = 45.0
 const LEAF_RADIUS: float = 5.0
+const MAX_GROWTH_POINTS: int = 1500
 
 var growth_points: Array[Vector2] = []
 var branches: Array[Dictionary] = []
@@ -77,6 +78,18 @@ func grow(delta: float) -> void:
 		_grow_timer -= SEGMENT_INTERVAL
 		growth_points.append(tip_position)
 
+		# Prune old points to prevent unbounded memory growth.
+		if growth_points.size() > MAX_GROWTH_POINTS:
+			var excess: int = growth_points.size() - MAX_GROWTH_POINTS
+			growth_points = growth_points.slice(excess)
+			# Also prune branches that correspond to removed points.
+			var cutoff_y: float = growth_points[0].y
+			var bi: int = branches.size() - 1
+			while bi >= 0:
+				if branches[bi]["pos"].y > cutoff_y:
+					branches.remove_at(bi)
+				bi -= 1
+
 		# Spawn decorative branches at height intervals.
 		var height: float = get_height()
 		if height >= _next_branch_height:
@@ -95,7 +108,7 @@ func check_bounds() -> bool:
 
 
 func check_obstacle_collision(obstacles: Array) -> int:
-	## Returns: 0 = no collision, 1 = lethal, 2 = cloud (slow), 3 = wind
+	## Returns: 0 = no collision, 1 = lethal, 2 = cloud (slow), 3 = wind, 4 = sunbeam
 	for obs: Dictionary in obstacles:
 		var obs_pos: Vector2 = obs["pos"]
 		var obs_type: int = obs["type"]

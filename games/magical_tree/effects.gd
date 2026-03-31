@@ -11,6 +11,7 @@ var _trail_color: Color = Color.GREEN
 
 
 func _process(delta: float) -> void:
+	var had_particles: bool = _particles.size() > 0
 	var i: int = _particles.size() - 1
 	while i >= 0:
 		var p: Dictionary = _particles[i]
@@ -29,7 +30,8 @@ func _process(delta: float) -> void:
 			_trail_timer = TRAIL_EMIT_INTERVAL
 			_emit_growth_sparkle()
 
-	if _particles.size() > 0:
+	# Redraw while particles exist, or one final time to clear the last frame.
+	if _particles.size() > 0 or had_particles:
 		queue_redraw()
 
 

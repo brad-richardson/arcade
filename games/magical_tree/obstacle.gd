@@ -70,7 +70,7 @@ func _spawn_obstacle(height: float) -> void:
 		obs_type = TYPE_WIND
 		obs_size = Vector2(120.0, 200.0)
 
-	var x: float = randf_range(-BOUNDS_X + SPAWN_MARGIN, BOUNDS_X - SPAWN_MARGIN)
+	var x: float = randf_range(-MagicalTree.BOUNDS_X + SPAWN_MARGIN, MagicalTree.BOUNDS_X - SPAWN_MARGIN)
 	var y: float = _spawn_ahead_y
 
 	var wind_dir: float = 0.0
@@ -85,11 +85,8 @@ func _spawn_obstacle(height: float) -> void:
 	})
 
 
-const BOUNDS_X: float = 340.0
-
-
 func _spawn_sunbeam() -> void:
-	var x: float = randf_range(-BOUNDS_X + 80.0, BOUNDS_X - 80.0)
+	var x: float = randf_range(-MagicalTree.BOUNDS_X + 80.0, MagicalTree.BOUNDS_X - 80.0)
 	var y: float = _spawn_ahead_y
 	obstacles.append({
 		"pos": Vector2(x, y),

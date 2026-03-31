@@ -161,6 +161,8 @@ func _update_growing(delta: float) -> void:
 		return
 
 	var hit: int = tree.check_obstacle_collision(obstacles.get_active_obstacles())
+	# Always clear slow first; re-apply only if still in a cloud.
+	tree.clear_slow()
 	if hit == TreeObstacles.TYPE_STONE:
 		if tree.can_burn and not has_burned:
 			has_burned = true
@@ -181,8 +183,6 @@ func _update_growing(delta: float) -> void:
 						and tree.tip_position.y < obs["pos"].y + half.y:
 					tree.apply_wind(obs["wind_dir"] * 200.0)
 					break
-	else:
-		tree.clear_slow()
 
 	queue_redraw()
 
@@ -212,12 +212,7 @@ func _draw() -> void:
 
 
 func _draw_seed_select(vp: Vector2, cam_pos: Vector2) -> void:
-	# Title.
-	var title_pos: Vector2 = Vector2(cam_pos.x, cam_pos.y - vp.y / 2.0 + 180.0)
-	# Draw title via a centered indicator line (actual text in Label would be better,
-	# but we keep it minimal — the score label doubles as instruction text).
-
-	# Seed cards.
+	# Seed selection cards.
 	var total_width: float = SEEDS.size() * CARD_WIDTH + (SEEDS.size() - 1) * CARD_GAP
 	var start_x: float = cam_pos.x - total_width / 2.0
 
@@ -315,11 +310,17 @@ func _handle_growing_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			pos_x = event.position.x
+		elif tree:
+			# Finger lifted: stop steering.
+			tree.steer_direction = 0.0
 	elif event is InputEventScreenDrag:
 		pos_x = event.position.x
 	elif event is InputEventMouseButton:
 		if event.pressed:
 			pos_x = event.position.x
+		elif event.button_index == MOUSE_BUTTON_LEFT and tree:
+			# Left mouse button released: stop steering.
+			tree.steer_direction = 0.0
 	elif event is InputEventMouseMotion:
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			pos_x = event.position.x
