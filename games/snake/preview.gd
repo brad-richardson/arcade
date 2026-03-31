@@ -30,16 +30,27 @@ func _process(delta: float) -> void:
 		_dir_index = (_dir_index + 1) % _directions.size()
 		_snake.direction = _directions[_dir_index]
 
+	# Bounce off walls — set both current and target direction immediately
+	# to avoid the smooth turning letting the snake escape.
 	var margin: float = 30.0
+	var dir: Vector2 = _snake.direction
+	var bounced: bool = false
 	if _snake.position.x < margin:
-		_snake.direction.x = absf(_snake.direction.x)
+		dir.x = absf(dir.x)
+		bounced = true
 	elif _snake.position.x > PREVIEW_MAP.x - margin:
-		_snake.direction.x = -absf(_snake.direction.x)
+		dir.x = -absf(dir.x)
+		bounced = true
 	if _snake.position.y < margin:
-		_snake.direction.y = absf(_snake.direction.y)
+		dir.y = absf(dir.y)
+		bounced = true
 	elif _snake.position.y > PREVIEW_MAP.y - margin:
-		_snake.direction.y = -absf(_snake.direction.y)
-	_snake.direction = _snake.direction.normalized()
+		dir.y = -absf(dir.y)
+		bounced = true
+	if bounced:
+		dir = dir.normalized()
+		_snake._direction = dir
+		_snake._target_direction = dir
 
 	_food_timer += delta
 	if _food_timer >= 2.0 and _snake.segments_eaten < 30:

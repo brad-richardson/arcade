@@ -136,6 +136,10 @@ func get_segment_positions() -> Array[Vector2]:
 	return _get_segment_positions()
 
 
+func get_segments() -> Array[Dictionary]:
+	return _segments
+
+
 func _get_segment_positions() -> Array[Vector2]:
 	var positions: Array[Vector2] = []
 	positions.append(position)
@@ -143,29 +147,29 @@ func _get_segment_positions() -> Array[Vector2]:
 	if _path.size() < 2:
 		return positions
 
-	var accumulated_dist: float = 0.0
+	# Single-pass walk: accumulate distance along the path once,
+	# placing each segment as we reach its target distance.
+	var seg_i: int = 1
+	var target_dist: float = _segments[0]["radius"] * SEGMENT_SPACING
+	var total: float = 0.0
+	var walk_idx: int = _path.size() - 1
 
-	for seg_i: int in range(1, _segments.size()):
-		var spacing: float = _segments[seg_i - 1]["radius"] * SEGMENT_SPACING
-		var target_dist: float = accumulated_dist + spacing
-
-		var found: bool = false
-		var total: float = 0.0
-		var walk_idx: int = _path.size() - 1
-		while walk_idx > 0:
-			var d: float = _path[walk_idx].distance_to(_path[walk_idx - 1])
-			if total + d >= target_dist:
-				var t: float = (target_dist - total) / d
-				positions.append(_path[walk_idx].lerp(_path[walk_idx - 1], t))
-				found = true
-				break
+	while walk_idx > 0 and seg_i < _segments.size():
+		var d: float = _path[walk_idx].distance_to(_path[walk_idx - 1])
+		if total + d >= target_dist:
+			var t: float = (target_dist - total) / d
+			positions.append(_path[walk_idx].lerp(_path[walk_idx - 1], t))
+			seg_i += 1
+			if seg_i < _segments.size():
+				target_dist += _segments[seg_i - 1]["radius"] * SEGMENT_SPACING
+			# Don't advance walk_idx — next segment might be on the same edge.
+		else:
 			total += d
 			walk_idx -= 1
 
-		if not found:
-			positions.append(_path[0])
-
-		accumulated_dist = target_dist
+	# If path isn't long enough for remaining segments, stack at the end.
+	while positions.size() < _segments.size():
+		positions.append(_path[0])
 
 	return positions
 

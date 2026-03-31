@@ -143,16 +143,26 @@ func _spawn_snake() -> void:
 func _on_tier_changed(_new_tier: int) -> void:
 	_effects.emit_tier_burst(snake.position, snake.get_tier_color())
 	_effects.update_trail_color(snake.get_tier_color())
+	# Camera shake.
 	var tween: Tween = create_tween()
 	tween.tween_property(camera, "offset", Vector2(3, 3), 0.05)
 	tween.tween_property(camera, "offset", Vector2(-3, -3), 0.05)
 	tween.tween_property(camera, "offset", Vector2.ZERO, 0.1)
+	# Screen flash.
+	var flash: ColorRect = ColorRect.new()
+	flash.color = Color(snake.get_tier_color(), 0.3)
+	flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	$UI.add_child(flash)
+	var flash_tween: Tween = create_tween()
+	flash_tween.tween_property(flash, "color:a", 0.0, 0.3)
+	flash_tween.tween_callback(flash.queue_free)
 
 
 func _end_game(cleared: bool) -> void:
 	game_over = true
 	if not cleared:
-		_effects.emit_death_shatter(snake.get_segment_positions(), snake._segments)
+		_effects.emit_death_shatter(snake.get_segment_positions(), snake.get_segments())
 		snake.visible = false
 	var multiplier: int = 2 if cleared else 1
 	var coins_earned: int = int(snake.segments_eaten * coin_rate * multiplier)
