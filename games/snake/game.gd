@@ -4,6 +4,8 @@ extends BaseGame
 const MAP_SIZE: Vector2 = Vector2(3600, 6400)
 const FOOD_COUNT: int = 120
 const FOOD_MARGIN: float = 100.0
+const FOOD_BUFFER: float = 8.0
+const MAX_PLACEMENT_ATTEMPTS: int = 20
 const BORDER_COLOR: Color = Color(0.4, 0.4, 0.5)
 const BORDER_WIDTH: float = 4.0
 const BG_COLOR: Color = Color(0.08, 0.08, 0.12)
@@ -83,10 +85,6 @@ func _spawn_food() -> void:
 
 	for i: int in range(FOOD_COUNT):
 		var food: FoodItem = FoodItem.new()
-		var pos: Vector2 = Vector2(
-			randf_range(FOOD_MARGIN, MAP_SIZE.x - FOOD_MARGIN),
-			randf_range(FOOD_MARGIN, MAP_SIZE.y - FOOD_MARGIN),
-		)
 
 		var size: FoodItem.FoodSize
 		var shape: FoodItem.FoodShape
@@ -101,10 +99,43 @@ func _spawn_food() -> void:
 			size = FoodItem.FoodSize.LARGE
 			shape = large_shapes[randi() % large_shapes.size()]
 
-		food.setup(pos, size, shape)
+		# Set up the food first so we know its actual radius for spacing.
+		var temp_pos: Vector2 = Vector2(
+			randf_range(FOOD_MARGIN, MAP_SIZE.x - FOOD_MARGIN),
+			randf_range(FOOD_MARGIN, MAP_SIZE.y - FOOD_MARGIN),
+		)
+		food.setup(temp_pos, size, shape)
+
+		# Try to find a non-overlapping position.
+		var placed: bool = false
+		for _attempt: int in range(MAX_PLACEMENT_ATTEMPTS):
+			var pos: Vector2 = Vector2(
+				randf_range(FOOD_MARGIN, MAP_SIZE.x - FOOD_MARGIN),
+				randf_range(FOOD_MARGIN, MAP_SIZE.y - FOOD_MARGIN),
+			)
+			if _is_food_position_clear(pos, food.radius):
+				food.position = pos
+				placed = true
+				break
+
+		if not placed:
+			# Use last attempted position rather than skipping.
+			pass
+
 		_food_container.add_child(food)
 
 	total_food = FOOD_COUNT
+
+
+func _is_food_position_clear(pos: Vector2, new_radius: float) -> bool:
+	for child: Node in _food_container.get_children():
+		if not child is FoodItem:
+			continue
+		var other: FoodItem = child as FoodItem
+		var min_dist: float = new_radius + other.radius + FOOD_BUFFER
+		if pos.distance_to(other.position) < min_dist:
+			return false
+	return true
 
 
 func _check_food_collision() -> void:
@@ -118,11 +149,12 @@ func _check_food_collision() -> void:
 		var f: FoodItem = food as FoodItem
 		f.update_locked_state(max_eatable)
 
-		if f.locked:
-			continue
-
 		var dist: float = head_pos.distance_to(f.position)
 		if dist < head_r + f.radius * 0.5:
+			if f.locked:
+				# Too large to eat — die on impact.
+				_end_game(false)
+				return
 			snake.grow(f.worth)
 			_effects.emit_eat_burst(f.position, f.color)
 			segments_eaten = snake.segments_eaten
