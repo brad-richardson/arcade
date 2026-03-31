@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://games/snake/game.gd" id="1"]
 [ext_resource type="PackedScene" path="res://shared/ui/pause_menu.tscn" id="2"]
+[ext_resource type="Script" path="res://games/snake/joystick.gd" id="3"]
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1")
@@ -31,6 +32,9 @@ offset_right = -20.0
 offset_bottom = 60.0
 grow_horizontal = 0
 text = "Pause"
+
+[node name="Joystick" type="Node2D" parent="UI"]
+script = ExtResource("3")
 
 [node name="PauseMenu" parent="." instance=ExtResource("2")]
 

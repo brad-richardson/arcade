@@ -22,6 +22,8 @@ var snake: Snake
 func _ready() -> void:
 	super._ready()
 	_spawn_snake()
+	var joystick: FloatingJoystick = $UI/Joystick
+	joystick.direction_changed.connect(_on_direction_changed)
 
 
 func _process(delta: float) -> void:
@@ -80,6 +82,11 @@ func _end_game(cleared: bool) -> void:
 
 	await get_tree().create_timer(2.5).timeout
 	SceneTransition.go_to_hub()
+
+
+func _on_direction_changed(dir: Vector2) -> void:
+	if not game_over and snake:
+		snake.direction = dir
 
 
 func _on_pause_pressed() -> void:
