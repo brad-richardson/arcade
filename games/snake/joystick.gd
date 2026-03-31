@@ -16,7 +16,7 @@ var _origin: Vector2 = Vector2.ZERO
 var _knob_pos: Vector2 = Vector2.ZERO
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		var touch: InputEventScreenTouch = event
 		if touch.pressed and not _active:

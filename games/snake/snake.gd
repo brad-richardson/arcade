@@ -4,7 +4,9 @@ class_name Snake
 
 signal tier_changed(new_tier: int)
 
-const SPEED: float = 200.0
+const BASE_SPEED: float = 200.0
+const MIN_SPEED: float = 120.0
+const TURN_SPEED: float = 4.0
 const HEAD_SCALE: float = 1.2
 const GRACE_FACTOR: float = 1.3
 const PATH_RESOLUTION: float = 2.0
@@ -20,13 +22,12 @@ const TIERS: Array = [
 ]
 
 var _direction: Vector2 = Vector2.UP
+var _target_direction: Vector2 = Vector2.UP
 var direction: Vector2:
 	get:
 		return _direction
 	set(value):
-		if _direction.dot(value.normalized()) < -0.5:
-			return
-		_direction = value.normalized()
+		_target_direction = value.normalized()
 var segments_eaten: int = 0
 
 var _segments: Array[Dictionary] = []
@@ -38,8 +39,21 @@ func _ready() -> void:
 	_segments.append(_make_segment_data())
 
 
+func get_speed() -> float:
+	var tier: int = get_current_tier()
+	return lerpf(BASE_SPEED, MIN_SPEED, float(tier) / float(TIERS.size() - 1))
+
+
 func _process(delta: float) -> void:
-	position += direction.normalized() * SPEED * delta
+	# Gradually turn toward target direction.
+	var angle_diff: float = _direction.angle_to(_target_direction)
+	var max_turn: float = TURN_SPEED * delta
+	if absf(angle_diff) > max_turn:
+		_direction = _direction.rotated(signf(angle_diff) * max_turn)
+	else:
+		_direction = _target_direction
+
+	position += _direction * get_speed() * delta
 
 	if _path.is_empty() or position.distance_to(_path[_path.size() - 1]) >= PATH_RESOLUTION:
 		_path.append(position)
