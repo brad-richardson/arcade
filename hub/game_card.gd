@@ -4,8 +4,11 @@ extends PanelContainer
 @onready var icon: TextureRect = %Icon
 @onready var game_name: Label = %GameName
 @onready var description: Label = %Description
+@onready var _preview_container: SubViewportContainer = %PreviewContainer
+@onready var _preview_viewport: SubViewport = %PreviewViewport
 
 var _game_data: Dictionary = {}
+var _scroll_parent: ScrollContainer = null
 
 ## Accent colors assigned per card index for visual variety.
 const ACCENT_COLORS: Array[Color] = [
@@ -25,6 +28,13 @@ func _ready() -> void:
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	_normal_style = get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	_accent_panel = $VBoxContainer/AccentBar
+	# Cache scroll parent for visibility-based preview pausing.
+	var parent: Node = get_parent()
+	while parent != null:
+		if parent is ScrollContainer:
+			_scroll_parent = parent as ScrollContainer
+			break
+		parent = parent.get_parent()
 
 
 func setup(game_data: Dictionary, card_index: int = 0) -> void:
@@ -40,15 +50,38 @@ func _apply_data(card_index: int = 0) -> void:
 	game_name.text = _game_data.get("name", "Unknown")
 	description.text = _game_data.get("description", "")
 
-	var icon_path: String = _game_data.get("icon", "")
-	if icon_path != "" and ResourceLoader.exists(icon_path):
-		icon.texture = load(icon_path)
-
-	# Apply accent color based on card index
+	# Apply accent color based on card index.
 	var color: Color = ACCENT_COLORS[card_index % ACCENT_COLORS.size()]
 	var accent_style: StyleBoxFlat = _accent_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
 	accent_style.bg_color = color
 	_accent_panel.add_theme_stylebox_override("panel", accent_style)
+
+	# Try to load a live preview for this game.
+	var game_id: String = _game_data.get("id", "")
+	var preview_path: String = "res://games/%s/preview.tscn" % game_id
+	if game_id != "" and ResourceLoader.exists(preview_path):
+		var preview_scene: PackedScene = load(preview_path)
+		var preview_instance: Node = preview_scene.instantiate()
+		_preview_viewport.add_child(preview_instance)
+		_preview_container.visible = true
+		icon.visible = false
+	else:
+		_preview_container.visible = false
+		icon.visible = true
+		var icon_path: String = _game_data.get("icon", "")
+		if icon_path != "" and ResourceLoader.exists(icon_path):
+			icon.texture = load(icon_path)
+
+
+func _process(_delta: float) -> void:
+	if _preview_viewport == null or not _preview_container.visible:
+		return
+	var visible_in_scroll: bool = true
+	if _scroll_parent != null:
+		visible_in_scroll = get_global_rect().intersects(_scroll_parent.get_global_rect())
+	var target_mode: SubViewport.UpdateMode = SubViewport.UPDATE_ALWAYS if visible_in_scroll else SubViewport.UPDATE_DISABLED
+	if _preview_viewport.render_target_update_mode != target_mode:
+		_preview_viewport.render_target_update_mode = target_mode
 
 
 func _gui_input(event: InputEvent) -> void:

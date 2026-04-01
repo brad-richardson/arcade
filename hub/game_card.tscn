@@ -45,6 +45,20 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 80)
 theme_override_styles/panel = SubResource("accent_style")
 
+[node name="PreviewContainer" type="SubViewportContainer" parent="VBoxContainer/AccentBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+stretch = true
+visible = false
+
+[node name="PreviewViewport" type="SubViewport" parent="VBoxContainer/AccentBar/PreviewContainer"]
+unique_name_in_owner = true
+transparent_bg = true
+size = Vector2i(200, 200)
+render_target_update_mode = 3
+
 [node name="Icon" type="TextureRect" parent="VBoxContainer/AccentBar"]
 unique_name_in_owner = true
 layout_mode = 2

@@ -1,7 +1,7 @@
 extends Node2D
 ## Scripted demo of the snake game for hub card preview.
 
-const PREVIEW_MAP: Vector2 = Vector2(400, 400)
+const PREVIEW_MAP: Vector2 = Vector2(200, 200)
 const DIRECTION_CHANGE_INTERVAL: float = 1.5
 
 var _snake: Snake
@@ -20,7 +20,7 @@ func _ready() -> void:
 	_snake.position = PREVIEW_MAP / 2.0
 	_snake.direction = _directions[0]
 	add_child(_snake)
-	_snake.grow(5)
+	_snake.grow(3)
 
 
 func _process(delta: float) -> void:
@@ -32,7 +32,7 @@ func _process(delta: float) -> void:
 
 	# Bounce off walls — set both current and target direction immediately
 	# to avoid the smooth turning letting the snake escape.
-	var margin: float = 30.0
+	var margin: float = 15.0
 	var dir: Vector2 = _snake.direction
 	var bounced: bool = false
 	if _snake.position.x < margin:
@@ -53,7 +53,7 @@ func _process(delta: float) -> void:
 		_snake._target_direction = dir
 
 	_food_timer += delta
-	if _food_timer >= 2.0 and _snake.segments_eaten < 30:
+	if _food_timer >= 2.0 and _snake.segments_eaten < 15:
 		_food_timer = 0.0
 		_snake.grow(1)
 
