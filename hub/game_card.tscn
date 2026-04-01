@@ -23,11 +23,6 @@ shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxFlat" id="accent_style"]
 bg_color = Color(0.12, 0.14, 0.18, 1.0)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 0
-border_color = Color(0.3, 0.55, 0.9, 1.0)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 content_margin_left = 3.0
