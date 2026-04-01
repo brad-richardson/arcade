@@ -1,5 +1,6 @@
 extends HBoxContainer
 ## Small HUD widget that displays the current coin balance.
+## Shows a yellow circle icon next to the number.
 ## Connects to CurrencyManager.coins_changed to stay in sync.
 
 @onready var balance_label: Label = $BalanceLabel
