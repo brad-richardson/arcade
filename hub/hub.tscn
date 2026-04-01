@@ -1,6 +1,16 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://hub/hub.gd" id="1"]
+[ext_resource type="PackedScene" path="res://shared/ui/coin_display.tscn" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="header_style"]
+bg_color = Color(0.12, 0.13, 0.17, 1.0)
+content_margin_left = 20.0
+content_margin_top = 16.0
+content_margin_right = 20.0
+content_margin_bottom = 16.0
+border_width_bottom = 2
+border_color = Color(0.3, 0.55, 0.9, 0.6)
 
 [node name="Hub" type="Control"]
 layout_mode = 3
@@ -11,6 +21,15 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.11, 0.14, 1.0)
+
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -19,31 +38,45 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HeaderBar" type="HBoxContainer" parent="VBoxContainer"]
+[node name="HeaderBar" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("header_style")
+
+[node name="HBox" type="HBoxContainer" parent="VBoxContainer/HeaderBar"]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="VBoxContainer/HeaderBar"]
+[node name="Title" type="Label" parent="VBoxContainer/HeaderBar/HBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.95, 0.95, 0.97, 1.0)
 text = "Arcade"
 
-[node name="Spacer" type="Control" parent="VBoxContainer/HeaderBar"]
+[node name="Spacer" type="Control" parent="VBoxContainer/HeaderBar/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CoinDisplay" type="Label" parent="VBoxContainer/HeaderBar"]
+[node name="CoinDisplay" parent="VBoxContainer/HeaderBar/HBox" instance=ExtResource("2")]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Coins: 0"
-horizontal_alignment = 2
+size_flags_vertical = 4
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GameGrid" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
+[node name="GridMargin" type="MarginContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="GameGrid" type="GridContainer" parent="VBoxContainer/ScrollContainer/GridMargin"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
 columns = 2
