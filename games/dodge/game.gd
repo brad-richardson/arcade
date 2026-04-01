@@ -14,6 +14,7 @@ var touch_target_x: float = -1.0
 @onready var score_label: Label = $ScoreLabel
 @onready var spawn_timer: Timer = $SpawnTimer
 @onready var pause_menu: CanvasLayer = $PauseMenu
+@onready var game_over_screen: CanvasLayer = $GameOverScreen
 
 
 func _ready() -> void:
@@ -122,20 +123,7 @@ func _game_over() -> void:
 	spawn_timer.stop()
 
 	var coins_earned: int = award_coins()
-
-	var vp: Vector2 = get_viewport_rect().size
-	var label_size: Vector2 = Vector2(500, 200)
-	var game_over_label: Label = Label.new()
-	game_over_label.text = "Game Over!\nScore: %d\nCoins: +%d" % [int(time_played), coins_earned]
-	game_over_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	game_over_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	game_over_label.add_theme_font_size_override("font_size", 48)
-	game_over_label.size = label_size
-	game_over_label.position = (vp - label_size) / 2.0
-	add_child(game_over_label)
-
-	await get_tree().create_timer(2.0).timeout
-	SceneTransition.go_to_hub()
+	game_over_screen.show_game_over("Game Over!", "Score: %d" % int(time_played), coins_earned)
 
 
 func _on_pause_pressed() -> void:
