@@ -12,6 +12,7 @@ const BASE_SPAWN_INTERVAL: float = 2.0
 const MIN_SPAWN_INTERVAL: float = 0.6
 const SPAWN_MARGIN: float = 60.0
 const SUNBEAM_CHANCE: float = 0.12
+const OBSTACLE_BUFFER: float = 40.0
 
 const STONE_COLOR: Color = Color(0.45, 0.42, 0.4)
 const STONE_OUTLINE: Color = Color(0.3, 0.28, 0.26)
@@ -70,19 +71,28 @@ func _spawn_obstacle(height: float) -> void:
 		obs_type = TYPE_WIND
 		obs_size = Vector2(120.0, 200.0)
 
-	var x: float = randf_range(-SkyTree.BOUNDS_X + SPAWN_MARGIN, SkyTree.BOUNDS_X - SPAWN_MARGIN)
 	var y: float = _spawn_ahead_y
-
 	var wind_dir: float = 0.0
 	if obs_type == TYPE_WIND:
 		wind_dir = -1.0 if randf() < 0.5 else 1.0
 
-	obstacles.append({
-		"pos": Vector2(x, y),
-		"type": obs_type,
-		"size": obs_size,
-		"wind_dir": wind_dir,
-	})
+	# Try to find a non-overlapping position.
+	var placed: bool = false
+	for _attempt: int in range(10):
+		var x: float = randf_range(-SkyTree.BOUNDS_X + SPAWN_MARGIN, SkyTree.BOUNDS_X - SPAWN_MARGIN)
+		var candidate: Vector2 = Vector2(x, y)
+		if _is_position_clear(candidate, obs_size):
+			obstacles.append({
+				"pos": candidate,
+				"type": obs_type,
+				"size": obs_size,
+				"wind_dir": wind_dir,
+			})
+			placed = true
+			break
+	if not placed:
+		# Skip this spawn rather than overlap.
+		pass
 
 
 func _spawn_sunbeam() -> void:
@@ -91,9 +101,21 @@ func _spawn_sunbeam() -> void:
 	obstacles.append({
 		"pos": Vector2(x, y),
 		"type": TYPE_SUNBEAM,
-		"size": Vector2(80.0, 300.0),
+		"size": Vector2(120.0, 500.0),
 		"wind_dir": 0.0,
 	})
+
+
+func _is_position_clear(pos: Vector2, sz: Vector2) -> bool:
+	for obs: Dictionary in obstacles:
+		# Only check against nearby obstacles (same vertical band).
+		if absf(obs["pos"].y - pos.y) > 400.0:
+			continue
+		var min_dist_x: float = (sz.x + obs["size"].x) / 2.0 + OBSTACLE_BUFFER
+		var min_dist_y: float = (sz.y + obs["size"].y) / 2.0 + OBSTACLE_BUFFER
+		if absf(pos.x - obs["pos"].x) < min_dist_x and absf(pos.y - obs["pos"].y) < min_dist_y:
+			return false
+	return true
 
 
 func _cleanup() -> void:
@@ -179,64 +201,68 @@ func _draw_vine(pos: Vector2, sz: Vector2, half: Vector2) -> void:
 
 
 func _draw_cloud(pos: Vector2, sz: Vector2) -> void:
-	# Puffy layered cloud.
-	var cloud_light: Color = Color(0.2, 0.15, 0.3, 0.4)
-	var cloud_dark: Color = CLOUD_COLOR
-	# Bottom shadow layer.
-	draw_circle(pos + Vector2(0.0, 8.0), sz.x * 0.3, Color(0.08, 0.05, 0.12, 0.4))
-	# Main body — multiple overlapping circles for puffiness.
-	draw_circle(pos, sz.x * 0.3, cloud_dark)
-	draw_circle(pos + Vector2(-sz.x * 0.22, -sz.y * 0.08), sz.x * 0.26, cloud_dark)
-	draw_circle(pos + Vector2(sz.x * 0.22, -sz.y * 0.05), sz.x * 0.24, cloud_dark)
-	draw_circle(pos + Vector2(-sz.x * 0.1, -sz.y * 0.18), sz.x * 0.2, cloud_dark)
-	draw_circle(pos + Vector2(sz.x * 0.1, -sz.y * 0.15), sz.x * 0.18, cloud_dark)
-	# Lighter highlights on top.
-	draw_circle(pos + Vector2(0.0, -sz.y * 0.12), sz.x * 0.15, cloud_light)
-	draw_circle(pos + Vector2(sz.x * 0.15, -sz.y * 0.1), sz.x * 0.1, cloud_light)
-	# Wispy bottom tendrils.
-	draw_circle(pos + Vector2(0.0, sz.y * 0.15), sz.x * 0.18, Color(cloud_dark, 0.3))
-	draw_circle(pos + Vector2(-sz.x * 0.15, sz.y * 0.2), sz.x * 0.12, Color(cloud_dark, 0.2))
+	# Atmospheric fog/mist — soft, wide, very translucent.
+	# Outer haze — barely visible, large.
+	var haze: Color = Color(0.15, 0.12, 0.22, 0.08)
+	draw_circle(pos, sz.x * 0.55, haze)
+	draw_circle(pos + Vector2(-sz.x * 0.2, 0.0), sz.x * 0.45, haze)
+	draw_circle(pos + Vector2(sz.x * 0.2, 0.0), sz.x * 0.4, haze)
+	# Mid layer — slightly more visible.
+	var mist: Color = Color(0.18, 0.14, 0.25, 0.15)
+	draw_circle(pos, sz.x * 0.35, mist)
+	draw_circle(pos + Vector2(-sz.x * 0.15, -sz.y * 0.05), sz.x * 0.28, mist)
+	draw_circle(pos + Vector2(sz.x * 0.18, -sz.y * 0.03), sz.x * 0.25, mist)
+	draw_circle(pos + Vector2(0.0, sz.y * 0.08), sz.x * 0.22, mist)
+	# Dense core — still soft.
+	var core: Color = Color(0.2, 0.16, 0.28, 0.22)
+	draw_circle(pos + Vector2(-sz.x * 0.05, -sz.y * 0.02), sz.x * 0.2, core)
+	draw_circle(pos + Vector2(sz.x * 0.08, 0.0), sz.x * 0.16, core)
 
 
 func _draw_wind(pos: Vector2, dir: float) -> void:
-	var arrow_c: Color = WIND_COLOR
-	var gust_c: Color = Color(WIND_COLOR, 0.15)
-	# Background gust area.
-	draw_rect(Rect2(pos.x - 50.0, pos.y - 80.0, 100.0, 160.0), gust_c)
-	# Swooping wind lines — curved feel.
-	for row: int in range(5):
-		var ry: float = pos.y - 70.0 + row * 35.0
-		var wave: float = sin(float(row) * 1.2) * 8.0
-		var line_len: float = 40.0 + float(row % 3) * 10.0
+	# Atmospheric wind — soft streaks that look like air currents, not arrows.
+	# Soft haze in the gust area.
+	var haze: Color = Color(0.7, 0.85, 1.0, 0.05)
+	draw_circle(pos, 80.0, haze)
+	draw_circle(pos + Vector2(dir * 20.0, 0.0), 60.0, haze)
+	# Wispy streaks — thin, varying length, slightly curved.
+	for row: int in range(7):
+		var ry: float = pos.y - 80.0 + row * 25.0
+		var wave: float = sin(float(row) * 1.8) * 12.0
+		var line_len: float = 25.0 + float(row % 4) * 15.0
 		var base_x: float = pos.x - dir * line_len * 0.5
 		var tip_x: float = pos.x + dir * line_len * 0.5
-		var thickness: float = 2.0 + float(2 - abs(row - 2)) * 0.5
-		draw_line(Vector2(base_x, ry + wave), Vector2(tip_x, ry + wave), arrow_c, thickness, true)
-		# Arrowhead on middle lines.
-		if row >= 1 and row <= 3:
-			draw_line(
-				Vector2(tip_x, ry + wave),
-				Vector2(tip_x - dir * 8.0, ry + wave - 6.0),
-				arrow_c, 1.5, true
-			)
-			draw_line(
-				Vector2(tip_x, ry + wave),
-				Vector2(tip_x - dir * 8.0, ry + wave + 6.0),
-				arrow_c, 1.5, true
-			)
+		# Fade alpha — stronger in center, weaker at edges.
+		var fade: float = 1.0 - absf(float(row) - 3.0) / 4.0
+		var streak_c: Color = Color(0.75, 0.88, 1.0, 0.12 * fade)
+		var thickness: float = 1.0 + fade * 1.5
+		draw_line(Vector2(base_x, ry + wave), Vector2(tip_x, ry + wave), streak_c, thickness, true)
 
 
 func _draw_sunbeam(pos: Vector2, sz: Vector2, half: Vector2) -> void:
-	# Gradient sunbeam — brighter in center, fading at edges.
-	var steps: int = 5
-	for s: int in range(steps):
-		var t: float = float(s) / float(steps)
-		var inner_half_x: float = half.x * (1.0 - t * 0.8)
-		var alpha: float = 0.12 * (1.0 - t * 0.7)
-		var beam_rect: Rect2 = Rect2(pos.x - inner_half_x, pos.y - half.y, inner_half_x * 2.0, sz.y)
-		draw_rect(beam_rect, Color(1.0, 0.9, 0.4, alpha))
-	# Sparkle dots.
-	for i: int in range(6):
-		var sparkle_x: float = pos.x + sin(float(i) * 2.1) * half.x * 0.5
-		var sparkle_y: float = pos.y - half.y + float(i) * sz.y / 6.0
-		draw_circle(Vector2(sparkle_x, sparkle_y), 2.0, Color(1.0, 1.0, 0.8, 0.3))
+	# Atmospheric light shaft — wide, soft, tapers from top.
+	# Multiple soft overlapping layers for a volumetric feel.
+	var beam_layers: int = 8
+	for s: int in range(beam_layers):
+		var t: float = float(s) / float(beam_layers)
+		# Wider at top, narrower at bottom (light cone).
+		var top_half_x: float = half.x * (1.0 - t * 0.5)
+		var bot_half_x: float = half.x * (0.6 - t * 0.3)
+		var alpha: float = 0.06 * (1.0 - t * 0.6)
+		var warm: Color = Color(1.0, 0.92, 0.5, alpha)
+		# Draw as a quad (trapezoid) via polygon.
+		var top_y: float = pos.y - half.y
+		var bot_y: float = pos.y + half.y
+		var pts: PackedVector2Array = PackedVector2Array([
+			Vector2(pos.x - top_half_x, top_y),
+			Vector2(pos.x + top_half_x, top_y),
+			Vector2(pos.x + bot_half_x, bot_y),
+			Vector2(pos.x - bot_half_x, bot_y),
+		])
+		draw_colored_polygon(pts, warm)
+	# Floating motes of light — scattered gently.
+	for i: int in range(10):
+		var mote_x: float = pos.x + sin(float(i) * 1.7 + 0.3) * half.x * 0.4
+		var mote_y: float = pos.y - half.y + float(i) * sz.y / 10.0
+		var mote_alpha: float = 0.15 + sin(float(i) * 3.1) * 0.08
+		draw_circle(Vector2(mote_x, mote_y), 1.5 + sin(float(i)) * 0.5, Color(1.0, 1.0, 0.85, mote_alpha))
