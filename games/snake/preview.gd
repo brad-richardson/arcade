@@ -59,5 +59,4 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, PREVIEW_MAP), Color(0.08, 0.08, 0.12))
-	draw_rect(Rect2(Vector2.ZERO, PREVIEW_MAP), Color(0.3, 0.3, 0.4), false, 2.0)
+	draw_rect(Rect2(Vector2.ZERO, PREVIEW_MAP), Color(0.12, 0.14, 0.18))

@@ -50,10 +50,10 @@ func _apply_data(card_index: int = 0) -> void:
 	game_name.text = _game_data.get("name", "Unknown")
 	description.text = _game_data.get("description", "")
 
-	# Apply accent color based on card index.
+	# Apply accent color as border on preview area.
 	var color: Color = ACCENT_COLORS[card_index % ACCENT_COLORS.size()]
 	var accent_style: StyleBoxFlat = _accent_panel.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
-	accent_style.bg_color = color
+	accent_style.border_color = color
 	_accent_panel.add_theme_stylebox_override("panel", accent_style)
 
 	# Try to load a live preview for this game.

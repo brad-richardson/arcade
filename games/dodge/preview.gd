@@ -57,7 +57,7 @@ func _update_blocks(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, PREVIEW_SIZE), Color(0.1, 0.1, 0.15))
+	draw_rect(Rect2(Vector2.ZERO, PREVIEW_SIZE), Color(0.12, 0.14, 0.18))
 	draw_rect(Rect2(_player_pos - PLAYER_SIZE / 2.0, PLAYER_SIZE), Color(0.2, 0.7, 1.0))
 	for block_pos: Vector2 in _blocks:
 		draw_rect(Rect2(block_pos - BLOCK_SIZE / 2.0, BLOCK_SIZE), Color(1.0, 0.3, 0.3))
