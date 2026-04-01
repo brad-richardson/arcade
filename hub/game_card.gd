@@ -62,6 +62,11 @@ func _gui_input(event: InputEvent) -> void:
 				_launch_game()
 
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_MOUSE_EXIT:
+		_set_normal_style()
+
+
 func _set_pressed_style() -> void:
 	var pressed: StyleBoxFlat = _normal_style.duplicate() as StyleBoxFlat
 	pressed.bg_color = Color(0.22, 0.24, 0.3, 1.0)
