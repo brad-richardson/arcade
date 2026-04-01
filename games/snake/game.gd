@@ -21,6 +21,7 @@ var _effects: SnakeEffects
 
 @onready var camera: Camera2D = $Camera2D
 @onready var pause_menu: CanvasLayer = $PauseMenu
+@onready var game_over_screen: CanvasLayer = $GameOverScreen
 @onready var score_label: Label = $UI/ScoreLabel
 
 
@@ -206,19 +207,7 @@ func _end_game(cleared: bool) -> void:
 		CurrencyManager.add_coins(coins_earned)
 
 	var end_text: String = "Map Cleared!" if cleared else "Game Over!"
-	var vp: Vector2 = get_viewport_rect().size
-	var label_size: Vector2 = Vector2(500, 200)
-	var end_label: Label = Label.new()
-	end_label.text = "%s\nScore: %d\nCoins: +%d" % [end_text, snake.segments_eaten, coins_earned]
-	end_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	end_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	end_label.add_theme_font_size_override("font_size", 48)
-	end_label.size = label_size
-	end_label.position = (vp - label_size) / 2.0
-	$UI.add_child(end_label)
-
-	await get_tree().create_timer(2.5).timeout
-	SceneTransition.go_to_hub()
+	game_over_screen.show_game_over(end_text, "Score: %d" % snake.segments_eaten, coins_earned)
 
 
 func _on_direction_changed(dir: Vector2) -> void:
