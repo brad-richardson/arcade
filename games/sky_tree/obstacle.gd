@@ -201,42 +201,60 @@ func _draw_vine(pos: Vector2, sz: Vector2, half: Vector2) -> void:
 
 
 func _draw_cloud(pos: Vector2, sz: Vector2) -> void:
-	# Atmospheric fog/mist — soft, wide, very translucent.
-	# Outer haze — barely visible, large.
-	var haze: Color = Color(0.15, 0.12, 0.22, 0.08)
-	draw_circle(pos, sz.x * 0.55, haze)
-	draw_circle(pos + Vector2(-sz.x * 0.2, 0.0), sz.x * 0.45, haze)
-	draw_circle(pos + Vector2(sz.x * 0.2, 0.0), sz.x * 0.4, haze)
-	# Mid layer — slightly more visible.
-	var mist: Color = Color(0.18, 0.14, 0.25, 0.15)
-	draw_circle(pos, sz.x * 0.35, mist)
-	draw_circle(pos + Vector2(-sz.x * 0.15, -sz.y * 0.05), sz.x * 0.28, mist)
-	draw_circle(pos + Vector2(sz.x * 0.18, -sz.y * 0.03), sz.x * 0.25, mist)
-	draw_circle(pos + Vector2(0.0, sz.y * 0.08), sz.x * 0.22, mist)
-	# Dense core — still soft.
-	var core: Color = Color(0.2, 0.16, 0.28, 0.22)
-	draw_circle(pos + Vector2(-sz.x * 0.05, -sz.y * 0.02), sz.x * 0.2, core)
-	draw_circle(pos + Vector2(sz.x * 0.08, 0.0), sz.x * 0.16, core)
+	# Puffy cloud — recognizable cloud shape, semi-transparent.
+	var base_c: Color = Color(0.7, 0.7, 0.8, 0.35)
+	var highlight_c: Color = Color(0.85, 0.85, 0.95, 0.3)
+	var shadow_c: Color = Color(0.3, 0.3, 0.45, 0.25)
+	# Shadow underneath.
+	draw_circle(pos + Vector2(0.0, sz.y * 0.12), sz.x * 0.28, shadow_c)
+	draw_circle(pos + Vector2(-sz.x * 0.12, sz.y * 0.1), sz.x * 0.2, shadow_c)
+	# Main body — overlapping circles forming a puffy shape.
+	draw_circle(pos, sz.x * 0.3, base_c)
+	draw_circle(pos + Vector2(-sz.x * 0.2, 0.0), sz.x * 0.25, base_c)
+	draw_circle(pos + Vector2(sz.x * 0.2, 0.0), sz.x * 0.23, base_c)
+	draw_circle(pos + Vector2(-sz.x * 0.08, -sz.y * 0.15), sz.x * 0.22, base_c)
+	draw_circle(pos + Vector2(sz.x * 0.1, -sz.y * 0.12), sz.x * 0.2, base_c)
+	# Bumpy top — the classic cloud silhouette.
+	draw_circle(pos + Vector2(-sz.x * 0.15, -sz.y * 0.22), sz.x * 0.16, base_c)
+	draw_circle(pos + Vector2(0.0, -sz.y * 0.25), sz.x * 0.18, base_c)
+	draw_circle(pos + Vector2(sz.x * 0.12, -sz.y * 0.2), sz.x * 0.14, base_c)
+	# Highlight on top bumps.
+	draw_circle(pos + Vector2(-sz.x * 0.12, -sz.y * 0.25), sz.x * 0.1, highlight_c)
+	draw_circle(pos + Vector2(0.03, -sz.y * 0.28), sz.x * 0.12, highlight_c)
 
 
 func _draw_wind(pos: Vector2, dir: float) -> void:
-	# Atmospheric wind — soft streaks that look like air currents, not arrows.
-	# Soft haze in the gust area.
-	var haze: Color = Color(0.7, 0.85, 1.0, 0.05)
-	draw_circle(pos, 80.0, haze)
-	draw_circle(pos + Vector2(dir * 20.0, 0.0), 60.0, haze)
-	# Wispy streaks — thin, varying length, slightly curved.
-	for row: int in range(7):
-		var ry: float = pos.y - 80.0 + row * 25.0
-		var wave: float = sin(float(row) * 1.8) * 12.0
-		var line_len: float = 25.0 + float(row % 4) * 15.0
-		var base_x: float = pos.x - dir * line_len * 0.5
-		var tip_x: float = pos.x + dir * line_len * 0.5
-		# Fade alpha — stronger in center, weaker at edges.
-		var fade: float = 1.0 - absf(float(row) - 3.0) / 4.0
-		var streak_c: Color = Color(0.75, 0.88, 1.0, 0.12 * fade)
-		var thickness: float = 1.0 + fade * 1.5
-		draw_line(Vector2(base_x, ry + wave), Vector2(tip_x, ry + wave), streak_c, thickness, true)
+	# Aggressive wind gust — angled motion lines showing force direction.
+	var gust_color: Color = Color(0.6, 0.75, 0.9, 0.25)
+	var strong_color: Color = Color(0.5, 0.65, 0.85, 0.4)
+	# Diagonal slash lines — angled in the push direction.
+	for row: int in range(8):
+		var ry: float = pos.y - 90.0 + row * 25.0
+		var stagger: float = float(row % 3) * 12.0 * dir
+		var line_len: float = 30.0 + float(row % 3) * 20.0
+		var start_x: float = pos.x + stagger - dir * line_len * 0.3
+		var end_x: float = pos.x + stagger + dir * line_len * 0.7
+		# Lines angle slightly downward in push direction.
+		var slant: float = 6.0 * dir
+		var alpha_fade: float = 1.0 - absf(float(row) - 3.5) / 4.5
+		var c: Color = Color(gust_color, gust_color.a * alpha_fade)
+		var thickness: float = 1.5 + alpha_fade * 2.0
+		draw_line(Vector2(start_x, ry), Vector2(end_x, ry + slant), c, thickness, true)
+	# Central strong gusts — thicker, more opaque.
+	for i: int in range(3):
+		var gy: float = pos.y - 30.0 + float(i) * 30.0
+		var g_len: float = 50.0
+		draw_line(
+			Vector2(pos.x - dir * g_len * 0.3, gy),
+			Vector2(pos.x + dir * g_len * 0.7, gy + 4.0 * dir),
+			strong_color, 3.0, true
+		)
+		# Small speed lines trailing.
+		draw_line(
+			Vector2(pos.x - dir * g_len * 0.6, gy + 3.0),
+			Vector2(pos.x - dir * g_len * 0.2, gy + 3.0),
+			Color(gust_color, 0.15), 1.0, true
+		)
 
 
 func _draw_sunbeam(pos: Vector2, sz: Vector2, half: Vector2) -> void:
