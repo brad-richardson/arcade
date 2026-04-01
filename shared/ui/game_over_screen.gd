@@ -23,6 +23,7 @@ func show_game_over(title: String, score_text: String, coins: int) -> void:
 	title_label.text = title
 	score_label.text = score_text
 	coins_label.text = "Coins: +%d" % coins
+	overlay.modulate.a = 0.0
 	overlay.visible = true
 
 	# Animate overlay fade in and panel slide down.
