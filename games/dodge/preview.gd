@@ -1,7 +1,7 @@
 extends Node2D
 ## Scripted demo of the dodge game for hub card preview.
 
-const PREVIEW_SIZE: Vector2 = Vector2(200, 200)
+const PREVIEW_SIZE: Vector2 = Vector2(320, 200)
 const PLAYER_SIZE: Vector2 = Vector2(20, 20)
 const BLOCK_SIZE: Vector2 = Vector2(20, 20)
 const PLAYER_SPEED: float = 80.0

@@ -1,7 +1,7 @@
 extends Node2D
 ## Scripted demo of the snake game for hub card preview.
 
-const PREVIEW_MAP: Vector2 = Vector2(200, 200)
+const PREVIEW_MAP: Vector2 = Vector2(320, 200)
 const DIRECTION_CHANGE_INTERVAL: float = 1.5
 
 var _snake: Snake
