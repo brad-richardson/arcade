@@ -22,12 +22,17 @@ shadow_size = 4
 shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxFlat" id="accent_style"]
-bg_color = Color(0.3, 0.55, 0.9, 1.0)
+bg_color = Color(0.12, 0.14, 0.18, 1.0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 0
+border_color = Color(0.3, 0.55, 0.9, 1.0)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
 content_margin_bottom = 0.0
 
 [node name="GameCard" type="PanelContainer"]
@@ -73,7 +78,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_right = 12
-theme_override_constants/margin_top = 8
+theme_override_constants/margin_top = 12
 theme_override_constants/margin_bottom = 4
 
 [node name="Labels" type="VBoxContainer" parent="VBoxContainer/ContentMargin"]
@@ -82,7 +87,7 @@ layout_mode = 2
 [node name="GameName" type="Label" parent="VBoxContainer/ContentMargin/Labels"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 22
 theme_override_colors/font_color = Color(0.95, 0.95, 0.97, 1.0)
 horizontal_alignment = 1
 
