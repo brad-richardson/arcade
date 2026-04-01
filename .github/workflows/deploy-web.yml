@@ -26,7 +26,6 @@ jobs:
         run: |
           mkdir -p /github/home/.local/share/godot/export_templates/
           cp -r /root/.local/share/godot/export_templates/* /github/home/.local/share/godot/export_templates/
-          ls /github/home/.local/share/godot/export_templates/
 
       - name: Import project
         run: godot --headless --import 2>&1 || true
@@ -35,17 +34,6 @@ jobs:
         run: |
           mkdir -p export/web
           godot --headless --export-release "Web" export/web/index.html
-
-      - name: Add coi-serviceworker for SharedArrayBuffer
-        run: |
-          cat > export/web/coi-serviceworker.js << 'SWEOF'
-          /*! coi-serviceworker v0.1.7 - Guido Zuidhof, licensed under MIT */
-          if(typeof window==='undefined'){self.addEventListener("install",()=>self.skipWaiting()),self.addEventListener("activate",(e)=>e.waitUntil(self.clients.claim())),self.addEventListener("fetch",(e)=>{if(e.request.cache==="only-if-cached"&&e.request.mode!=="same-origin")return;e.respondWith(fetch(e.request).then((r)=>{if(r.status===0)return r;const h=new Headers(r.headers);h.set("Cross-Origin-Embedder-Policy","require-corp");h.set("Cross-Origin-Opener-Policy","same-origin");return new Response(r.body,{status:r.status,statusText:r.statusText,headers:h})}).catch((e)=>console.error(e)))})}else{const r=window.navigator;if(!("serviceWorker"in r))return;r.serviceWorker.register(new URL("coi-serviceworker.js",window.location.href).href).then((r)=>{r.addEventListener("updatefound",()=>{const n=r.installing;n.addEventListener("statechange",()=>{if(n.state==="activated"&&!r.active.scriptURL.includes("coi-serviceworker"))window.location.reload()})})});let reloading=false;r.serviceWorker.addEventListener("controllerchange",()=>{if(!reloading){reloading=true;window.location.reload()}})}
-          SWEOF
-
-      - name: Inject service worker into HTML
-        run: |
-          sed -i 's|<head>|<head><script src="coi-serviceworker.js"></script>|' export/web/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
