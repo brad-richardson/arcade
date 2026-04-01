@@ -1,19 +1,22 @@
-name: Deploy Web to GitHub Pages
+name: PR Preview
 
+# Note: uses pull_request, so previews only work for same-repo branches
+# (fork PRs get a read-only token). This is fine for this project.
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 concurrency:
-  group: pages-deploy
-  cancel-in-progress: false
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.5
@@ -36,26 +39,26 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: web-build
+          name: pr-web-build
           path: export/web
 
-  deploy:
+  deploy-preview:
     needs: build
+    if: always()
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
       - name: Download build artifact
+        if: github.event.action != 'closed'
         uses: actions/download-artifact@v4
         with:
-          name: web-build
+          name: pr-web-build
           path: export/web
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Deploy PR preview
+        uses: rossjrw/pr-preview-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./export/web
-          keep_files: true
+          source-dir: export/web/
+          umbrella-dir: pr-preview
+          action: auto
