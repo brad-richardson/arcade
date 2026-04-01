@@ -114,58 +114,129 @@ func _draw() -> void:
 
 		if obs_type == TYPE_STONE:
 			if sz.y < 20.0:
-				# Thorny vine — draw as line with thorns.
-				draw_line(
-					Vector2(pos.x - half.x, pos.y),
-					Vector2(pos.x + half.x, pos.y),
-					VINE_COLOR, 4.0, true
-				)
-				# Small thorns.
-				var thorn_count: int = int(sz.x / 20.0)
-				for t: int in range(thorn_count):
-					var tx: float = pos.x - half.x + (t + 0.5) * (sz.x / float(thorn_count))
-					var thorn_dir: float = -1.0 if t % 2 == 0 else 1.0
-					draw_line(
-						Vector2(tx, pos.y),
-						Vector2(tx, pos.y + thorn_dir * 8.0),
-						VINE_COLOR, 2.0
-					)
+				_draw_vine(pos, sz, half)
 			else:
-				# Stone block.
-				var rect: Rect2 = Rect2(pos - half, sz)
-				draw_rect(rect, STONE_COLOR)
-				draw_rect(rect, STONE_OUTLINE, false, 2.0)
+				_draw_stone(pos, sz, half)
 
 		elif obs_type == TYPE_CLOUD:
-			# Dark cloud — cluster of circles.
-			var cloud_c: Color = CLOUD_COLOR
-			draw_circle(pos, sz.x * 0.3, cloud_c)
-			draw_circle(pos + Vector2(-sz.x * 0.2, -sz.y * 0.1), sz.x * 0.25, cloud_c)
-			draw_circle(pos + Vector2(sz.x * 0.2, -sz.y * 0.05), sz.x * 0.22, cloud_c)
-			draw_circle(pos + Vector2(0.0, sz.y * 0.15), sz.x * 0.2, cloud_c)
+			_draw_cloud(pos, sz)
 
 		elif obs_type == TYPE_WIND:
-			# Wind gust — translucent arrows.
-			var dir: float = obs["wind_dir"]
-			var arrow_c: Color = WIND_COLOR
-			for row: int in range(3):
-				var ry: float = pos.y - 60.0 + row * 60.0
-				var base_x: float = pos.x - dir * 30.0
-				var tip_x: float = pos.x + dir * 30.0
-				draw_line(Vector2(base_x, ry), Vector2(tip_x, ry), arrow_c, 3.0, true)
-				# Arrowhead.
-				draw_line(
-					Vector2(tip_x, ry),
-					Vector2(tip_x - dir * 10.0, ry - 8.0),
-					arrow_c, 2.0, true
-				)
-				draw_line(
-					Vector2(tip_x, ry),
-					Vector2(tip_x - dir * 10.0, ry + 8.0),
-					arrow_c, 2.0, true
-				)
+			_draw_wind(pos, obs["wind_dir"])
 
 		elif obs_type == TYPE_SUNBEAM:
-			# Golden vertical stripe.
-			var rect: Rect2 = Rect2(pos - half, sz)
-			draw_rect(rect, SUNBEAM_COLOR)
+			_draw_sunbeam(pos, sz, half)
+
+
+func _draw_stone(pos: Vector2, sz: Vector2, half: Vector2) -> void:
+	var rect: Rect2 = Rect2(pos - half, sz)
+	# Layered stone with texture lines.
+	draw_rect(rect, STONE_COLOR)
+	# Cracks / texture lines.
+	var crack_color: Color = Color(STONE_OUTLINE, 0.5)
+	draw_line(pos + Vector2(-half.x * 0.6, -half.y * 0.3), pos + Vector2(half.x * 0.2, half.y * 0.1), crack_color, 1.0)
+	draw_line(pos + Vector2(-half.x * 0.1, -half.y * 0.5), pos + Vector2(half.x * 0.4, half.y * 0.4), crack_color, 1.0)
+	# Highlight on top edge.
+	draw_line(Vector2(pos.x - half.x, pos.y - half.y), Vector2(pos.x + half.x, pos.y - half.y), Color(0.6, 0.55, 0.5), 2.0)
+	# Shadow on bottom edge.
+	draw_line(Vector2(pos.x - half.x, pos.y + half.y), Vector2(pos.x + half.x, pos.y + half.y), Color(0.2, 0.18, 0.16), 2.0)
+	# Side edges.
+	draw_rect(rect, STONE_OUTLINE, false, 2.0)
+
+
+func _draw_vine(pos: Vector2, sz: Vector2, half: Vector2) -> void:
+	# Main vine stem — curved look via multiple segments.
+	var vine_dark: Color = Color(0.35, 0.1, 0.05)
+	var thorn_color: Color = Color(0.7, 0.2, 0.15)
+	var leaf_color: Color = Color(0.2, 0.45, 0.1, 0.7)
+	# Thick main stem.
+	draw_line(
+		Vector2(pos.x - half.x, pos.y),
+		Vector2(pos.x + half.x, pos.y),
+		VINE_COLOR, 5.0, true
+	)
+	# Darker inner line.
+	draw_line(
+		Vector2(pos.x - half.x + 2.0, pos.y),
+		Vector2(pos.x + half.x - 2.0, pos.y),
+		vine_dark, 2.0, true
+	)
+	# Thorns — alternating up/down, varying size.
+	var thorn_count: int = int(sz.x / 18.0)
+	for t: int in range(thorn_count):
+		var tx: float = pos.x - half.x + (t + 0.5) * (sz.x / float(thorn_count))
+		var thorn_dir: float = -1.0 if t % 2 == 0 else 1.0
+		var thorn_len: float = randf_range(8.0, 14.0) if t % 3 != 0 else 6.0
+		# Thorn spike.
+		draw_line(
+			Vector2(tx, pos.y),
+			Vector2(tx + 2.0, pos.y + thorn_dir * thorn_len),
+			thorn_color, 2.0
+		)
+		# Small leaf on every 4th thorn.
+		if t % 4 == 0:
+			draw_circle(Vector2(tx, pos.y + thorn_dir * 4.0), 4.0, leaf_color)
+
+
+func _draw_cloud(pos: Vector2, sz: Vector2) -> void:
+	# Puffy layered cloud.
+	var cloud_light: Color = Color(0.2, 0.15, 0.3, 0.4)
+	var cloud_dark: Color = CLOUD_COLOR
+	# Bottom shadow layer.
+	draw_circle(pos + Vector2(0.0, 8.0), sz.x * 0.3, Color(0.08, 0.05, 0.12, 0.4))
+	# Main body — multiple overlapping circles for puffiness.
+	draw_circle(pos, sz.x * 0.3, cloud_dark)
+	draw_circle(pos + Vector2(-sz.x * 0.22, -sz.y * 0.08), sz.x * 0.26, cloud_dark)
+	draw_circle(pos + Vector2(sz.x * 0.22, -sz.y * 0.05), sz.x * 0.24, cloud_dark)
+	draw_circle(pos + Vector2(-sz.x * 0.1, -sz.y * 0.18), sz.x * 0.2, cloud_dark)
+	draw_circle(pos + Vector2(sz.x * 0.1, -sz.y * 0.15), sz.x * 0.18, cloud_dark)
+	# Lighter highlights on top.
+	draw_circle(pos + Vector2(0.0, -sz.y * 0.12), sz.x * 0.15, cloud_light)
+	draw_circle(pos + Vector2(sz.x * 0.15, -sz.y * 0.1), sz.x * 0.1, cloud_light)
+	# Wispy bottom tendrils.
+	draw_circle(pos + Vector2(0.0, sz.y * 0.15), sz.x * 0.18, Color(cloud_dark, 0.3))
+	draw_circle(pos + Vector2(-sz.x * 0.15, sz.y * 0.2), sz.x * 0.12, Color(cloud_dark, 0.2))
+
+
+func _draw_wind(pos: Vector2, dir: float) -> void:
+	var arrow_c: Color = WIND_COLOR
+	var gust_c: Color = Color(WIND_COLOR, 0.15)
+	# Background gust area.
+	draw_rect(Rect2(pos.x - 50.0, pos.y - 80.0, 100.0, 160.0), gust_c)
+	# Swooping wind lines — curved feel.
+	for row: int in range(5):
+		var ry: float = pos.y - 70.0 + row * 35.0
+		var wave: float = sin(float(row) * 1.2) * 8.0
+		var line_len: float = 40.0 + float(row % 3) * 10.0
+		var base_x: float = pos.x - dir * line_len * 0.5
+		var tip_x: float = pos.x + dir * line_len * 0.5
+		var thickness: float = 2.0 + float(2 - abs(row - 2)) * 0.5
+		draw_line(Vector2(base_x, ry + wave), Vector2(tip_x, ry + wave), arrow_c, thickness, true)
+		# Arrowhead on middle lines.
+		if row >= 1 and row <= 3:
+			draw_line(
+				Vector2(tip_x, ry + wave),
+				Vector2(tip_x - dir * 8.0, ry + wave - 6.0),
+				arrow_c, 1.5, true
+			)
+			draw_line(
+				Vector2(tip_x, ry + wave),
+				Vector2(tip_x - dir * 8.0, ry + wave + 6.0),
+				arrow_c, 1.5, true
+			)
+
+
+func _draw_sunbeam(pos: Vector2, sz: Vector2, half: Vector2) -> void:
+	# Gradient sunbeam — brighter in center, fading at edges.
+	var steps: int = 5
+	for s: int in range(steps):
+		var t: float = float(s) / float(steps)
+		var inner_half_x: float = half.x * (1.0 - t * 0.8)
+		var alpha: float = 0.12 * (1.0 - t * 0.7)
+		var beam_rect: Rect2 = Rect2(pos.x - inner_half_x, pos.y - half.y, inner_half_x * 2.0, sz.y)
+		draw_rect(beam_rect, Color(1.0, 0.9, 0.4, alpha))
+	# Sparkle dots.
+	for i: int in range(6):
+		var sparkle_x: float = pos.x + sin(float(i) * 2.1) * half.x * 0.5
+		var sparkle_y: float = pos.y - half.y + float(i) * sz.y / 6.0
+		draw_circle(Vector2(sparkle_x, sparkle_y), 2.0, Color(1.0, 1.0, 0.8, 0.3))

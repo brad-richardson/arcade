@@ -212,6 +212,19 @@ func _draw() -> void:
 
 
 func _draw_seed_select(vp: Vector2, cam_pos: Vector2) -> void:
+	var font: Font = ThemeDB.fallback_font
+	var font_size: int = 16
+	var small_size: int = 12
+	var title_size: int = 24
+
+	# Title.
+	var title_text: String = "Choose Your Seed"
+	var title_pos: Vector2 = Vector2(
+		cam_pos.x - font.get_string_size(title_text, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size).x / 2.0,
+		cam_pos.y - vp.y / 2.0 + CARD_Y - 40.0
+	)
+	draw_string(font, title_pos, title_text, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size, Color.WHITE)
+
 	# Seed selection cards.
 	var total_width: float = SEEDS.size() * CARD_WIDTH + (SEEDS.size() - 1) * CARD_GAP
 	var start_x: float = cam_pos.x - total_width / 2.0
@@ -238,6 +251,16 @@ func _draw_seed_select(vp: Vector2, cam_pos: Vector2) -> void:
 		draw_circle(orb_center, 18.0, Color(seed_data["glow_color"], 0.5))
 		draw_circle(orb_center, 10.0, Color(seed_data["glow_color"], 0.8))
 
+		# Seed name.
+		var name_text: String = seed_data["name"]
+		var name_w: float = font.get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		draw_string(font, Vector2(card_x + (CARD_WIDTH - name_w) / 2.0, card_y + 100.0), name_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
+
+		# Seed description.
+		var desc_text: String = seed_data["description"]
+		var desc_w: float = font.get_string_size(desc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_size).x
+		draw_string(font, Vector2(card_x + (CARD_WIDTH - desc_w) / 2.0, card_y + 120.0), desc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_size, Color(1.0, 1.0, 1.0, 0.6))
+
 	# Plant button (only if seed selected).
 	if selected_seed >= 0:
 		var btn_w: float = 180.0
@@ -250,6 +273,17 @@ func _draw_seed_select(vp: Vector2, cam_pos: Vector2) -> void:
 		var btn_color: Color = SEEDS[selected_seed]["glow_color"]
 		draw_rect(btn_rect, Color(btn_color, 0.3))
 		draw_rect(btn_rect, btn_color, false, 2.0)
+
+		# Button label.
+		var plant_text: String = "Plant"
+		var plant_w: float = font.get_string_size(plant_text, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size).x
+		draw_string(font, Vector2(btn_rect.position.x + (btn_w - plant_w) / 2.0, btn_rect.position.y + 33.0), plant_text, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size, btn_color)
+
+	# Tutorial hint.
+	var hint_text: String = "Drag left/right to steer"
+	var hint_w: float = font.get_string_size(hint_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_size).x
+	var hint_y: float = cam_pos.y - vp.y / 2.0 + PLANT_BUTTON_Y + 80.0
+	draw_string(font, Vector2(cam_pos.x - hint_w / 2.0, hint_y), hint_text, HORIZONTAL_ALIGNMENT_LEFT, -1, small_size, Color(1.0, 1.0, 1.0, 0.35))
 
 
 func _input(event: InputEvent) -> void:
